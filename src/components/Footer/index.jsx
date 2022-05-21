@@ -1,6 +1,6 @@
 export function Footer() {
   return (
-    <footer className="mt-5 font-sans text-shadow-title w-full flex flex-col items-center justify-center drop-shadow-sm text-xs">
+    <footer className="mt-5 font-sans text-shadow-title w-full flex flex-col items-center justify-center drop-shadow-sm text-lg lg:text-xs">
       <span>
         Feito para{" "}
         <a

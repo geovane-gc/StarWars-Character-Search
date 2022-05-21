@@ -54,7 +54,7 @@ function App() {
       <Title />
 
       <section className="w-full flex items-center justify-center">
-        <div className="font-sans text-center bg-zinc-900 border border-zinc-800 bg-opacity-70 backdrop-filter backdrop-blur-sm p-12 rounded-2xl flex flex-col items-center justify-center w-80">
+        <div className="font-sans text-center bg-zinc-900 border border-zinc-800 bg-opacity-70 backdrop-filter backdrop-blur-sm p-12 rounded-2xl flex flex-col items-center justify-center w-80 text-xl lg:text-lg">
           Procure por seus personagens:
           <input
             type="text"
