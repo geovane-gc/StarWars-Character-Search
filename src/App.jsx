@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Title } from "./components/Title";
 import { Footer } from "./components/Footer";
+import { CircleNotch } from "phosphor-react";
 
 function App() {
   const [inputText, setInputText] = useState("");
   const [charactersList, setCharactersList] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isCharacterSelected, setIsCharacterSelected] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [characterMovies, setCharacterMovies] = useState([]);
@@ -16,6 +18,7 @@ function App() {
   }, [isCharacterSelected]);
 
   async function fetchCharacters() {
+    setIsLoading(true);
     let nextPage = "https://swapi.dev/api/people/";
     let characters = [];
 
@@ -27,27 +30,8 @@ function App() {
     }
 
     setCharactersList(characters);
+    setIsLoading(false);
   }
-
-  useEffect(() => {
-    fetchMovies();
-  }, []);
-
-  const fetchMovies = async () => {
-    const movies = selectedCharacter.films;
-
-    let moviesFetched = [];
-
-    await Promise.all(
-      movies.map(async (movie) => {
-        const response = await fetch(movies);
-        const swfilm = await response.json();
-
-        moviesFetched.push(swfilm);
-      })
-    );
-    setCharacterMovies(moviesFetched);
-  };
 
   return (
     <>
@@ -63,7 +47,10 @@ function App() {
             placeholder="Digite aqui..."
             onChange={(event) => setInputText(event.target.value)}
           />
-          {!isCharacterSelected
+          {isLoading ? (
+            <CircleNotch weight="bold" className="w-4 h-4 animate-spin" />
+          ) : (
+          !isCharacterSelected
             ? charactersList &&
               charactersList.map((character) => {
                 return (
@@ -104,7 +91,7 @@ function App() {
                     Voltar
                   </button>
                 </>
-              )}
+              ))}
         </div>
       </section>
 
