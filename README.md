@@ -1,4 +1,4 @@
-# Star Wars Character Search
+# Star Wars Character Search 🛸
 A simple Star Wars characters search!
 To run this project you must execute:
   1. npm install
