@@ -3,6 +3,10 @@ import { Title } from "./components/Title";
 import { Footer } from "./components/Footer";
 import { CircleNotch } from "phosphor-react";
 
+import { api } from "./services/api";
+
+const RECORDS_BY_PAGE = 10;
+
 function App() {
   const [inputText, setInputText] = useState("");
   const [charactersList, setCharactersList] = useState([]);
@@ -14,24 +18,59 @@ function App() {
   console.log(characterMovies);
 
   useEffect(() => {
-    fetchCharacters();
-  }, [isCharacterSelected]);
+    if (selectedCharacter) {
+      async function loadFilms() {
+        try {
+          setIsLoading(true);
+          const promises = selectedCharacter.films.map((film) => {
+            return api({ url: film });
+          });
+          const promiseResults = await Promise.all(promises);
+          const newFilmsList = [
+            ...characterMovies,
+            ...promiseResults.map((r) => r.data),
+          ];
+          setCharacterMovies(newFilmsList);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setIsLoading(false);
+        }
+      }
 
-  async function fetchCharacters() {
-    setIsLoading(true);
-    let nextPage = "https://swapi.dev/api/people/";
-    let characters = [];
+      loadFilms();
+    }
+  }, [selectedCharacter]);
 
-    while (nextPage) {
-      const response = await fetch(nextPage);
-      const { next, results } = await response.json();
-      nextPage = next;
-      characters = [...characters, ...results];
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setIsLoading(true);
+        let promises = [];
+        for (let i = 1; i < RECORDS_BY_PAGE; i++) {
+          let request;
+          if (i == 1) {
+            request = api.get("people");
+          } else {
+            request = api.get(`people/?page=${i}`);
+          }
+          promises.push(request);
+        }
+        const promiseResults = await Promise.all(promises);
+        const newCharactersList = [
+          ...charactersList,
+          ...promiseResults.map((r) => r.data.results),
+        ].flat();
+        setCharactersList(newCharactersList);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
     }
 
-    setCharactersList(characters);
-    setIsLoading(false);
-  }
+    loadData();
+  }, []);
 
   return (
     <>
@@ -49,49 +88,54 @@ function App() {
           />
           {isLoading ? (
             <CircleNotch weight="bold" className="w-4 h-4 animate-spin" />
-          ) : (
-          !isCharacterSelected
-            ? charactersList &&
-              charactersList.map((character) => {
-                return (
-                  character.name
-                    .toLowerCase()
-                    .match(inputText.toLowerCase()) && (
-                    <div
-                      key={character.name}
-                      onClick={() => {
-                        setIsCharacterSelected(true);
-                        setSelectedCharacter(character);
-                      }}
-                      className="cursor-pointer hover:text-yellow-400 transition-colors"
-                    >
-                      {character.name}
-                    </div>
-                  )
-                );
-              })
-            : selectedCharacter && (
-                <>
-                  <div className="flex flex-col">
-                    <span>Nome: {selectedCharacter.name}</span>
-                    <span>
-                      Ano de nascimento: {selectedCharacter.birth_year}
-                    </span>
-                    <span>Gênero: {selectedCharacter.gender}</span>
-                    <span>Cor dos olhos: {selectedCharacter.eye_color}</span>
-                    <span>Filmes:</span>
-                  </div>
-                  <button
+          ) : !isCharacterSelected ? (
+            charactersList &&
+            charactersList.map((character) => {
+              return (
+                character.name.toLowerCase().match(inputText.toLowerCase()) && (
+                  <div
+                    key={character.name}
                     onClick={() => {
-                      setSelectedCharacter(null);
-                      setIsCharacterSelected(false);
+                      setIsCharacterSelected(true);
+                      setSelectedCharacter(character);
                     }}
-                    className="flex p-2 px-4 mt-5 rounded-2xl text-yellow-400 border border-yellow-400 hover:text-black hover:bg-yellow-400 transition-colors"
+                    className="cursor-pointer hover:text-yellow-400 transition-colors"
                   >
-                    Voltar
-                  </button>
-                </>
-              ))}
+                    {character.name}
+                  </div>
+                )
+              );
+            })
+          ) : (
+            selectedCharacter && (
+              <>
+                <div className="flex flex-col">
+                  <span>Nome: {selectedCharacter.name}</span>
+                  <span>Ano de nascimento: {selectedCharacter.birth_year}</span>
+                  <span>Gênero: {selectedCharacter.gender}</span>
+                  <span>Cor dos olhos: {selectedCharacter.eye_color}</span>
+                  <span>Filmes:</span>
+                  {characterMovies.map((movie) => {
+                    return (
+                      <span>
+                        {movie.title} <br />
+                        {movie.release_date}
+                      </span>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedCharacter(null);
+                    setIsCharacterSelected(false);
+                  }}
+                  className="flex p-2 px-4 mt-5 rounded-2xl text-yellow-400 border border-yellow-400 hover:text-black hover:bg-yellow-400 transition-colors"
+                >
+                  Voltar
+                </button>
+              </>
+            )
+          )}
         </div>
       </section>
 
