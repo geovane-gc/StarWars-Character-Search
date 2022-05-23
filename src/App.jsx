@@ -15,8 +15,6 @@ function App() {
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [characterMovies, setCharacterMovies] = useState([]);
 
-  console.log(characterMovies);
-
   useEffect(() => {
     if (selectedCharacter) {
       async function loadFilms() {
